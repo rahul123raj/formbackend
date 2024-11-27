@@ -158,26 +158,39 @@ let formDelete = async (req,res)=>{
 let formUpdate = async (req,res)=>{
     try {
 
-        const uploadResult = await cloudinary.uploader.upload(req.file.path);
-     
-        //  console.log(uploadResult);
-        await fs.unlink(req.file.path, err =>{
-            if(err) throw err
-            console.log('file is deleted')
-           })
-      let {name,email,mobno,address,branch} = req.body
+               let uploadResult = null;
+        if (req.file) {
+            uploadResult = await cloudinary.uploader.upload(req.file.path);
+            await fs.unlink(req.file.path, (err) => {
+                if (err) throw err;
+                console.log('Temporary file deleted');
+            });
+        }
+
+        let { name, email, mobno, address, branch } = req.body;
+
+        let updateFields = {
+            name,
+            email,
+            mobno,
+            address,
+            branch,
+        };
+
+        if (uploadResult) {
+            updateFields.imgurl = uploadResult.secure_url;
+        }
 
         let payload = await FormModel.updateOne(
-            {_id : req.params.id},
-            {$set: {
-                imgurl: uploadResult.secure_url,
-                name:name,
-                email:email,
-                mobno:mobno,
-                address:address,
-                branch:branch
-            }
-        })
+            { _id: req.params.id },
+            { $set: updateFields }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Data is updated',
+            payload,
+        });
 
         res
         .status(200)
