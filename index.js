@@ -192,13 +192,7 @@ let formUpdate = async (req,res)=>{
             payload,
         });
 
-        res
-        .status(200)
-        .json({
-            success: true,
-            message: 'data is updated',
-            payload
-        })
+        
     } catch (error) {
         console.log(error)
     }
